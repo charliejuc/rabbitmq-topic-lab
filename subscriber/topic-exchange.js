@@ -3,11 +3,11 @@
 const amqp = require('amqplib')
 const {backOff} = require('../lib/backoff')
 const queue = process.env.QUEUE || 'hello'
-const exchangeName = process.env.EXCHANGE || 'my-direct'
+const exchangeName = process.env.EXCHANGE || 'my-topic'
 const difficulty = process.env.DIFFICULTY != null
     ? Number(process.env.DIFFICULTY)
     : 9
-const exchangeType = 'direct'
+const exchangeType = 'topic'
 const pattern = process.env.PATTERN || ''
 
 console.log({

@@ -3,12 +3,12 @@
 const amqp = require('amqplib')
 const {backOff} = require('../lib/backoff')
 
-const exchangeName = process.env.EXCHANGE || 'my-direct'
+const exchangeName = process.env.EXCHANGE || 'my-topic'
 const routingKey = process.env.ROUTING_KEY || ''
 const delay = process.env.DELAY != null
     ? Number(process.env.DELAY)
     : 2000
-const exchangeType = 'direct'
+const exchangeType = 'topic'
 
 console.log({
     exchangeName,
