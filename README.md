@@ -1,4 +1,4 @@
-# RabbitMQ DIRECT Exchange Node.js Lab
+# RabbitMQ TOPIC Exchange Node.js Lab
 
 ## Prepare project
 
@@ -18,45 +18,75 @@ Management user and password are "**guest**" without quotes.
 docker run -d -v ${PWD}/rabbit-db:/var/lib/rabbitmq --hostname yt-rabbit -p 5672:5672 -p 8081:15672 --name yt-rabbit rabbitmq:3-management
 ```
 
-## Same Exchange and Routing Key, different queue
+## Patterns
+### Wildcards
+* `*` (star) can substitute for exactly one word.
+* `#` (hash) can substitute for zero or more words.
+
+### What is a word?
+The word is the string between dots: `company.v1.images.crop`
+
+* `word.word.word.word` Each "word" string is a word.
+
+To match `company.v1.images` routing key you can use, for example:
+#### Exact match (like a `direct` exchange)
+* `company.v1.images`
+
+#### With `*`
+* `*.v1.images`
+* `*.*.images`
+* `*.*.*`
+* `company.*.images`
+* `company.*.*`
+* `company.v1.*`
+
+#### With `#`
+* `company.#`
+* `#.v1.#`
+* `#.images`
+* `#` Receives all messages regardless of the routing key.
+  (like a `fanout` exchange)
+
+#### You can use both
+* `*.v1.#`
+
+## Same Exchange and Match Pattern, different queue
 
 All subscribers receive all messages.
 
 ### Subscribers (Run commands in different terminals)
 
 ```bash
-PATTERN=A QUEUE=first EXCHANGE=my-direct node subscriber/direct-exchang
-e.js
+PATTERN=company.v1.pdf.* QUEUE=first EXCHANGE=my-topic node subscriber/topic-exchange.js
 
-PATTERN=A QUEUE=second EXCHANGE=my-direct node subscriber/direct-exchang
-e.js
+PATTERN=company.v1.# QUEUE=second EXCHANGE=my-topic node subscriber/topic-exchange.js
 ```
 
 ### Publishers
 
 ```bash
-ROUTING_KEY=A EXCHANGE=my-direct node publisher/topic-exchange.js
+ROUTING_KEY=company.v1.pdf.generate EXCHANGE=my-topic node publisher/topic-exchange.js
 ```
 
-## Same Exchange and Routing Key and queue
+## Same Exchange and Match Pattern and queue
 
 All subscribers receive messages using round-robin.
 
 ### Subscribers (Run commands in different terminals)
 
 ```bash
-PATTERN=A QUEUE=first EXCHANGE=my-direct node subscriber/topic-exchange.js
+PATTERN=company.v1.pdf.* QUEUE=first EXCHANGE=my-topic node subscriber/topic-exchange.js
 
-PATTERN=A QUEUE=first EXCHANGE=my-direct node subscriber/topic-exchange.js
+PATTERN=company.v1.# QUEUE=first EXCHANGE=my-topic node subscriber/topic-exchange.js
 ```
 
 ### Publishers
 
 ```bash
-ROUTING_KEY=A EXCHANGE=my-direct node publisher/topic-exchange.js
+ROUTING_KEY=company.v1.pdf.generate EXCHANGE=my-topic node publisher/topic-exchange.js
 ```
 
-## Different Exchange, same Routing Key and queue
+## Different Exchange, same Match Pattern and queue
 
 All subscribers receive messages using round-robin.
 
@@ -65,15 +95,15 @@ All subscribers receive messages using round-robin.
 ### Subscribers (Run commands in different terminals)
 
 ```bash
-PATTERN=A QUEUE=second EXCHANGE=my-direct-2 node subscriber/topic-exchange.js
+PATTERN=company.v1.pdf.* QUEUE=second EXCHANGE=my-topic-2 node subscriber/topic-exchange.js
 
-PATTERN=A QUEUE=second EXCHANGE=my-direct node subscriber/topic-exchange.js
+PATTERN=company.v1.# QUEUE=second EXCHANGE=my-topic node subscriber/topic-exchange.js
 ```
 
 ### Publishers
 
 ```bash
-ROUTING_KEY=A EXCHANGE=my-direct node publisher/topic-exchange.js
+ROUTING_KEY=company.v1.pdf.generate EXCHANGE=my-topic node publisher/topic-exchange.js
 ```
 
 ## Keep messages after RabbitMQ restart
